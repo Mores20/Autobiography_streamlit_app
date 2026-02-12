@@ -2,233 +2,28 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 from PIL import Image
-import plotly.express as px
-import plotly.graph_objects as go
 from datetime import datetime
 import time
 
-# Page Config
+# Page Configa
 st.set_page_config(
     page_title="Lyndon Luke Morre | Portfolio",
     page_icon="💻",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+import os
 
-# Custom CSS with Modern Design System
-st.markdown("""
-    <style>
-        /* Modern Color Palette */
-        :root {
-            --primary: #6366f1;
-            --primary-dark: #4f52e0;
-            --secondary: #8b5cf6;
-            --accent: #f59e0b;
-            --dark: #1e293b;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --success: #10b981;
-            --gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        /* Global Styles */
-        .main {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-        
-        .stApp {
-            background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
-        }
-        
-        /* Typography */
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Inter', sans-serif;
-            font-weight: 600;
-            letter-spacing: -0.025em;
-        }
-        
-        h1 {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            font-size: 3rem !important;
-        }
-        
-        /* Cards and Containers */
-        .css-1r6slb0, .css-12oz5g7 {
-            border: none;
-            border-radius: 20px;
-            padding: 20px;
-            background: rgba(255, 255, 255, 0.95);
-            box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-            backdrop-filter: blur(10px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        
-        .css-1r6slb0:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 60px rgba(0,0,0,0.12);
-        }
-        
-        /* Buttons */
-        .stButton > button {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            letter-spacing: 0.025em;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.35);
-            width: 100%;
-        }
-        
-        .stButton > button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.45);
-            color: white;
-        }
-        
-        /* Metrics */
-        .css-1xarl3l {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            border-left: 5px solid var(--primary);
-        }
-        
-        /* Progress Bar */
-        .stProgress > div > div {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 50px;
-            height: 10px;
-        }
-        
-        /* Sidebar */
-        .css-1d391kg {
-            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        }
-        
-        .css-1d391kg .sidebar-content {
-            color: white;
-        }
-        
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        .fade-in {
-            animation: fadeIn 0.6s ease-out;
-        }
-        
-        /* Skill Tags */
-        .skill-tag {
-            background: linear-gradient(135deg, #667eea20 0%, #764ba220 100%);
-            padding: 8px 16px;
-            border-radius: 50px;
-            color: var(--dark);
-            font-size: 14px;
-            font-weight: 500;
-            display: inline-block;
-            margin: 5px;
-            transition: all 0.3s ease;
-            border: 1px solid var(--primary);
-        }
-        
-        .skill-tag:hover {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            transform: scale(1.05);
-        }
-        
-        /* Project Cards */
-        .project-card {
-            background: white;
-            border-radius: 20px;
-            padding: 25px;
-            margin: 15px 0;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            border: 1px solid #e2e8f0;
-        }
-        
-        .project-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border-color: var(--primary);
-        }
-        
-        /* Timeline */
-        .timeline-item {
-            position: relative;
-            padding-left: 30px;
-            margin-bottom: 30px;
-            border-left: 3px solid var(--primary);
-        }
-        
-        /* Social Links */
-        .social-link {
-            color: var(--gray);
-            text-decoration: none;
-            margin: 0 10px;
-            transition: all 0.3s ease;
-        }
-        
-        .social-link:hover {
-            color: var(--primary);
-            transform: translateY(-2px);
-        }
-        
-        /* Form Inputs */
-        .stTextInput > div > div > input,
-        .stTextArea > div > div > textarea {
-            border-radius: 10px;
-            border: 2px solid #e2e8f0;
-            padding: 12px;
-            transition: all 0.3s ease;
-        }
-        
-        .stTextInput > div > div > input:focus,
-        .stTextArea > div > div > textarea:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-        
-        /* Image Hover Effect */
-        .stImage > img {
-            border-radius: 20px;
-            transition: all 0.5s ease;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        
-        .stImage > img:hover {
-            transform: scale(1.02);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-        }
-        
-        /* Typing Animation */
-        .typing-animation {
-            overflow: hidden;
-            white-space: nowrap;
-            animation: typing 3.5s steps(40, end);
-        }
-        
-        @keyframes typing {
-            from { width: 0; }
-            to { width: 100%; }
-        }
-        
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            h1 { font-size: 2rem !important; }
-            .css-1r6slb0 { padding: 15px; }
-        }
-    </style>
-""", unsafe_allow_html=True)
+def load_css():
+    css_path = os.path.join(os.path.dirname(__file__), "style.css")
+    if os.path.exists(css_path):
+        with open(css_path) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    else:
+        st.error("CSS file not found. Check your file path.")
+
+load_css()
+
 
 # Initialize session state
 if 'dark_mode' not in st.session_state:
@@ -237,6 +32,8 @@ if 'visitor_count' not in st.session_state:
     st.session_state.visitor_count = 0
 if 'notification_shown' not in st.session_state:
     st.session_state.notification_shown = False
+if 'page' not in st.session_state:
+    st.session_state.page = "Home"
 
 # Visitor counter
 st.session_state.visitor_count += 1
@@ -308,7 +105,7 @@ if page == "Home":
     with col1:
         st.markdown("""
             <h1 class='fade-in'>👋 Welcome to My Portfolio</h1>
-            <h2 class='typing-animation' style='font-size: 24px; color: var(--dark);'>
+            <h2 class='typing-animation' style='font-size: 24px; color: 62222;'>
                 Hello! I'm Lyndon Luke Morre
             </h2>
         """, unsafe_allow_html=True)
@@ -418,29 +215,41 @@ elif page == "About Me":
         
         # Interactive timeline
         st.markdown("""
-            <div style='margin-top: 30px;'>
-                <div class='timeline-item'>
+                
+                <div class="timeline-item">
                     <h3>🎓 Education</h3>
-                    <p><strong>University of Cebu - Main Campus</strong><br>
-                    Bachelor of Science in Information Technology<br>
-                    <span style='color: var(--gray);'>2022 - Present</span></p>
+                    <p>
+                        <strong>Cebu Institute of Technology - University</strong><br>
+                        Bachelor of Science in Information Technology<br>
+                        2022 - Present
+                    </p>
                 </div>
+        """, unsafe_allow_html=True)
                 
-                <div class='timeline-item'>
+
+        st.markdown("""
+            <div class="timeline-item">
                     <h3>💼 Experience</h3>
-                    <p><strong>IT Intern</strong> - Tech Solutions Inc.<br>
-                    Web Development & Database Management<br>
-                    <span style='color: var(--gray);'>Summer 2024</span></p>
+                    <p>
+                        <strong>IT Intern</strong> - Tech Solutions Inc.<br>
+                        Web Development & Database Management<br>
+                        Summer 2024
+                    </p>
                 </div>
-                
-                <div class='timeline-item'>
+        """, unsafe_allow_html=True)
+        st.markdown("""
+                <div class="timeline-item">
                     <h3>🏆 Certifications</h3>
-                    <p>• Google IT Support Professional<br>
-                    • Cisco Networking Basics<br>
-                    • Python for Everybody (Coursera)</p>
+                    <p>
+                        • Google IT Support Professional<br>
+                        • Cisco Networking Basics<br>
+                        • Python for Everybody (Coursera)
+                    </p>
                 </div>
             </div>
         """, unsafe_allow_html=True)
+
+
         
         with st.expander("🎯 My Goals & Dreams", expanded=True):
             st.markdown("""
@@ -481,9 +290,9 @@ elif page == "About Me":
                 </div>
             """, unsafe_allow_html=True)
         except:
-            st.info("📸 Cooking photos coming soon!")
+            st.info("📸 Cooking photos coming soon! Add your images to the 'images' folder.")
     
-    # Location with interactive map
+    # Location with map
     st.markdown("---")
     st.subheader("📍 Location")
     
@@ -503,21 +312,6 @@ elif page == "About Me":
                 <p>🏝️ Queen City of the South</p>
                 <p>🌆 Where tradition meets innovation</p>
                 <p>🎯 Timezone: GMT+8</p>
-                <br>
-                <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                          padding: 20px; border-radius: 15px; color: white;'>
-                    <h4 style='color: white; margin-top: 0;'>🌏 Local Time</h4>
-                    <p style='font-size: 24px; font-weight: bold;' id='time'></p>
-                    <script>
-                        function updateTime() {
-                            let date = new Date();
-                            let options = { timeZone: 'Asia/Manila', hour12: true, hour: '2-digit', minute: '2-digit' };
-                            document.getElementById('time').innerHTML = date.toLocaleTimeString('en-US', options);
-                        }
-                        updateTime();
-                        setInterval(updateTime, 1000);
-                    </script>
-                </div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -551,39 +345,29 @@ elif page == "Skills":
                 """, unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
     
-    # Interactive proficiency chart
+    # Skill proficiency with custom progress bars
     st.subheader("📊 Skill Proficiency")
     
-    proficiency_data = pd.DataFrame({
-        "Skill": ["Python", "Java", "React", "SQL", "JavaScript", "Django"],
-        "Level": [85, 75, 80, 70, 85, 65],
-        "Category": ["Backend", "Programming", "Frontend", "Database", "Frontend", "Backend"]
-    })
+    proficiency_data = {
+        "Python": 85,
+        "Java": 75,
+        "React": 80,
+        "SQL": 70,
+        "JavaScript": 85,
+        "Django": 65
+    }
     
-    # Create interactive bar chart with Plotly
-    fig = px.bar(
-        proficiency_data,
-        x="Skill",
-        y="Level",
-        color="Category",
-        title="Current Skill Levels",
-        text="Level",
-        color_discrete_sequence=['#667eea', '#764ba2', '#f59e0b', '#10b981']
-    )
-    
-    fig.update_layout(
-        plot_bgcolor="rgba(0,0,0,0)",
-        paper_bgcolor="rgba(0,0,0,0)",
-        font_family="Inter",
-        title_font_size=20,
-        xaxis_title="",
-        yaxis_title="Proficiency Level",
-        yaxis_range=[0, 100]
-    )
-    
-    fig.update_traces(texttemplate='%{text}%', textposition='outside')
-    
-    st.plotly_chart(fig, use_container_width=True)
+    for skill, level in proficiency_data.items():
+        col1, col2 = st.columns([1, 3])
+        with col1:
+            st.markdown(f"**{skill}**")
+        with col2:
+            st.markdown(f"""
+                <div class='skill-progress'>
+                    <div class='skill-progress-fill' style='width: {level}%;'></div>
+                </div>
+                <p style='text-align: right; margin-top: -5px;'>{level}%</p>
+            """, unsafe_allow_html=True)
     
     # Learning path
     st.subheader("🎓 Learning Path")
@@ -678,6 +462,9 @@ elif page == "Projects":
         if project_info["status"] in status_filter:
             if year_filter == "All" or project_info["year"] == year_filter:
                 with cols[col_index % 2]:
+                    tech_tags = ''.join([f'<span class="skill-tag">{tech}</span>' for tech in project_info['tech']])
+                    status_color = "#10b981" if project_info["status"] == "Completed" else "#f59e0b" if project_info["status"] == "Live" else "#6366f1"
+                    
                     st.markdown(f"""
                         <div class='project-card'>
                             <div style='display: flex; align-items: center; margin-bottom: 15px;'>
@@ -686,10 +473,10 @@ elif page == "Projects":
                             </div>
                             <p style='color: var(--gray);'>{project_info['description']}</p>
                             <div style='margin: 15px 0;'>
-                                {''.join([f'<span class="skill-tag">{tech}</span>' for tech in project_info['tech']])}
+                                {tech_tags}
                             </div>
                             <div style='display: flex; justify-content: space-between; align-items: center; margin-top: 15px;'>
-                                <span style='background: {("success" if project_info["status"] == "Completed" else "warning")};
+                                <span style='background: {status_color};
                                          padding: 5px 10px; border-radius: 50px; font-size: 12px;
                                          color: white;'>
                                     {project_info['status']}
@@ -739,9 +526,9 @@ elif page == "Contact":
                 </div>
                 <div style='margin-top: 40px;'>
                     <p style='font-size: 24px;'>
-                        <a href='#' style='color: white; text-decoration: none; margin-right: 20px;'>🔗</a>
-                        <a href='#' style='color: white; text-decoration: none; margin-right: 20px;'>💻</a>
-                        <a href='#' style='color: white; text-decoration: none;'>📱</a>
+                        <a href='#' style='color: white; text-decoration: none; margin-right: 20px;'>🔗 LinkedIn</a>
+                        <a href='#' style='color: white; text-decoration: none; margin-right: 20px;'>💻 GitHub</a>
+                        <a href='#' style='color: white; text-decoration: none;'>📱 Twitter</a>
                     </p>
                 </div>
             </div>
